@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Player Scores</title>
+  <style>
+    table {
+      width: 50%;
+      margin: 20px auto;
+      border-collapse: collapse;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: center;
+    }
+    th {
+      background-color: #f4f4f4;
+    }
+    .updated {
+      background-color: #d4edda; /* 淺綠色表示更新 */
+    }
+  </style>
+  <script>
+    let previousData = []; // 存儲上次的資料
+
+    async function fetchPlayerScores() {
+      const url = 'https://script.google.com/macros/s/你的WebAppID/exec'; // 替換為你的 Apps Script URL
+
+      try {
+        const response = await fetch(url);
+        const data = await response.json();
+
+        // 比較新資料和舊資料是否有變化
+        const hasChanged = JSON.stringify(data) !== JSON.stringify(previousData);
+
+        if (hasChanged) {
+          // 更新表格內容
+          updateTable(data);
+          previousData = data; // 更新舊資料
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    }
+
+    function updateTable(data) {
+      const tableBody = document.getElementById('scores-table-body');
+      tableBody.innerHTML = ''; // 清空現有內容
+
+      data.forEach(player => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${player.playerName}</td>
+          <td>${player.score}</td>
+        `;
+        row.classList.add('updated'); // 高亮顯示更新的行
+        tableBody.appendChild(row);
+      });
+
+      // 移除高亮顯示，延遲 2 秒後執行
+      setTimeout(() => {
+        document.querySelectorAll('.updated').forEach(row => {
+          row.classList.remove('updated');
+        });
+      }, 2000);
+    }
+
+    // 每分鐘自動更新
+    setInterval(fetchPlayerScores, 60000); // 60,000 毫秒 = 1 分鐘
+
+    // 頁面加載時立即抓取一次資料
+    window.onload = fetchPlayerScores;
+  </script>
+</head>
+<body>
+  <h1 style="text-align: center;">Player Scores</h1>
+  <table>
+    <thead>
+      <tr>
+        <th>Player Name</th>
+        <th>Score</th>
+      </tr>
+    </thead>
+    <tbody id="scores-table-body">
+      <!-- 資料將由 JavaScript 動態插入 -->
+    </tbody>
+  </table>
+</body>
+</html>
